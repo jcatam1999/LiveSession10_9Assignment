@@ -58,13 +58,33 @@ hist(Hdata$TotAccomChg)
 
 ##Barplots
 cnt=table(Hdata$Gender,Hdata$admsrcdesc)
-par(mar=c(13.5, 2.1 ,2.1 ,2.1))
+par(mar=c(13.5, 3.1 ,2.1 ,2.1))
 barplot(cnt, main='Admission Source By Gender', xlab='Admission Source', 
         col=c('blue', 'red'), legend = rownames(cnt), beside = TRUE, ylim = c(0,110), las=2)
 
-##t test
+##Mortality Rate
+##total 292 divided by deaths of 292 - mortality codes 20, 40, 41, 42
+##Calculate Mortality
+mrate292 = nrow(subset(Hdata, Hdata$drgcode == 292 & Hdata$dischdest == 20 | Hdata$dischdest == 40 |
+                                          Hdata$dischdest == 41 | Hdata$dischdest == 42)) /nrow(subset(Hdata, Hdata$drgcode == 292))
+mrate293 = nrow(subset(Hdata, Hdata$drgcode == 293 & Hdata$dischdest == 20 | Hdata$dischdest == 40 |
+              Hdata$dischdest == 41 | Hdata$dischdest == 42)) /nrow(subset(Hdata, Hdata$drgcode == 293))
+##convert values to percent and Add  back to a table for plotting
+mrates = matrix(c(mrate292*100, mrate293*100), ncol = 1, byrow=TRUE)
+rownames(mrates)=c('DRG292', 'DRG293')
+colnames(mrates)=c('Mortality')
+mrates = as.table(mrates)
+#adjust margins
+par(mar=c(5.0, 5.1 ,2.1 ,2.1))
+##Plot
+barplot(mrates, main = 'Mortality Rate', xlab = 'DRG', ylab = 'Percent', beside = TRUE, ylim = c(0,3.5),col=c('blue', 'red'), legend = rownames(mrates))
+
+
+##one sample t test
 Hdata291 = subset(Hdata, Hdata$drgcode ==291)
-head(Hdata)
 mean(Hdata291$LOS)
 hist(Hdata291$LOS)
-t.test(Hdata291$LOS, mu=6, alternative = 'two.sided')
+t.test(Hdata$LOS, mu=1.8)
+Hdata291$loglos = log(Hdata291$LOS)
+hist(Hdata291$loglos)
+t.test(Hdata291$loglos, mu=log(6), alternative = 'two.sided')
